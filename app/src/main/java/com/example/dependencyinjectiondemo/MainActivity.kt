@@ -2,24 +2,19 @@ package com.example.dependencyinjectiondemo
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var smartPhone: SmartPhone
+    @Inject  // field injection
+    lateinit var smartPhone: SmartPhone
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         // Dagger로
         DaggerSmartPhoneComponent.create()
-            .getSmartPhone()
-            .makeACallWithRecording()
-
-
-//        val smartPhone = SmartPhone(
-//            Battery(),
-//            SIMCard(ServiceProvider()),
-//            MemoryCard()
-//        )
-//            .makeACallWithRecording()
+            .inject(this@MainActivity)
+        smartPhone.makeACallWithRecording()
     }
 }
