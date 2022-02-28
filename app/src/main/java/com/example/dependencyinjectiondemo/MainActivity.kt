@@ -12,9 +12,16 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Dagger로
-        DaggerSmartPhoneComponent.create()
+        // 모듈이 state를 갖게 된다면 create를 사용할 수 없다.
+//        DaggerSmartPhoneComponent.create()
+//            .inject(this@MainActivity)
+//        smartPhone.makeACallWithRecording()
+
+        // when instance requires variable inside a module
+        // builder 함수로 생성, -> we have to add each module with a state here.
+        DaggerSmartPhoneComponent.builder()
+            .memoryCardModule(MemoryCardModule(1000))
+            .build()
             .inject(this@MainActivity)
-        smartPhone.makeACallWithRecording()
     }
 }
