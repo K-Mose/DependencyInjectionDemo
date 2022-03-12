@@ -1,6 +1,9 @@
-package com.example.dependencyinjectiondemo
+package com.example.dependencyinjectiondemo.smartphone
 
 import android.util.Log
+import com.example.dependencyinjectiondemo.simcard.SIMCard
+import com.example.dependencyinjectiondemo.battery.Battery
+import com.example.dependencyinjectiondemo.memorycard.MemoryCard
 import javax.inject.Inject
 import javax.inject.Singleton
 

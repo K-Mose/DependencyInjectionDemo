@@ -2,6 +2,7 @@ package com.example.dependencyinjectiondemo
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.example.dependencyinjectiondemo.smartphone.SmartPhone
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {

@@ -1,4 +1,4 @@
-package com.example.dependencyinjectiondemo
+package com.example.dependencyinjectiondemo.battery
 
 import android.util.Log
 import javax.inject.Inject

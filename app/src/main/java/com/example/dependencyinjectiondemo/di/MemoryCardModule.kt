@@ -1,6 +1,7 @@
-package com.example.dependencyinjectiondemo
+package com.example.dependencyinjectiondemo.di
 
 import android.util.Log
+import com.example.dependencyinjectiondemo.memorycard.MemoryCard
 import dagger.Module
 import dagger.Provides
 

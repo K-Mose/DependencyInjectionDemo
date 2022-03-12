@@ -1,6 +1,9 @@
 package com.example.dependencyinjectiondemo
 
 import android.app.Application
+import com.example.dependencyinjectiondemo.di.DaggerSmartPhoneComponent
+import com.example.dependencyinjectiondemo.di.SmartPhoneComponent
+import com.example.dependencyinjectiondemo.di.MemoryCardModule
 
 // subclass of MainClass
 class SmartPhoneApplication : Application() {

@@ -1,5 +1,6 @@
-package com.example.dependencyinjectiondemo
+package com.example.dependencyinjectiondemo.di
 
+import com.example.dependencyinjectiondemo.MainActivity
 import dagger.Component
 import javax.inject.Singleton
 

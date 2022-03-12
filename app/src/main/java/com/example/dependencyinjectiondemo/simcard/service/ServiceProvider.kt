@@ -1,4 +1,4 @@
-package com.example.dependencyinjectiondemo
+package com.example.dependencyinjectiondemo.simcard.service
 
 import android.util.Log
 import javax.inject.Inject
