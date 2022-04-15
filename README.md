@@ -1,13 +1,26 @@
 # DependencyInjectionDemo
 Dependency Injection With Dagger2 (https://www.udemy.com/course/android-architecture-componentsmvvm-with-dagger-retrofit/)
 
-# Scenario
+## Dependency Injection - 의존성 주입
+의존성이란 한 클래스를 생성하기 위해 생성자에 다른 클래스가 들어가서 그 클래스가 꼭 필요한 것을 말한다. 
+```kotlin
+class A 
+class B(a: A) // B가 A를 의존
+
+fun main() {
+  val a = A()
+  val b = B(a) // 의존성 주입
+}
+```
+위 클래스 B는 객체를 생성할 때 클래스 A가 반드시 필요하다 이것을 클래스 B가 클래스 A를 의존한다 말하며, 클래스 B의 객체를 생성하면서 생성자에 클래스 A를 넣는 것을 의존성 주입이라 한다. 
+
+## Scenario
 ![image](https://user-images.githubusercontent.com/55622345/158050431-a32ca0e1-8cb4-44cd-b1ed-8dbe2498b468.png)
 SmartPhoen 객체는 Battery, MemoryCard, SIMCard에 의존,
 SIMCard는 ServiceProvider에 의존.
 SmartPhone 객체 생성 시 필요한 의존성 주입을 Dagger로 주입
 
-# Injection Process 
+## Injection Process 
 SmartPhone Dependeny Injection Progress 
 1. SmartPhoneApplication - smartPhoneComponent = initDagger()
   android:name에 등록된 Application부터 실행, initDagger 함수 실행 
