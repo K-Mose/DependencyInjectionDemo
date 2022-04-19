@@ -113,6 +113,54 @@ SmartPhoen 객체는 Battery, MemoryCard, SIMCard에 의존하고
 SIMCard는 ServiceProvider에 의존합니다. 
 SmartPhone 객체 생성 시 필요한 의존성을 주입합니다. 
 
+## Three Way of Dependency Injection
+
+### Construct Injection 
+```kotlin
+val smartPhone = SmartPhone(
+    Battery(),
+    SIMCard(ServiceProvider()),
+    MemoryCard()
+).makeACallWithRecording()
+```
+Construct Injection은 생성자를 생성 할 때 필요한 객체를 넘겨주어 생성합니다. 
+
+### Method Injection 
+```kotlin 
+class SIMCard(private  val serviceProvider: ServiceProvider) {
+    private lateinit var serviceProvider: ServiceProvider 
+    init {
+        Log.i("MYTAG","SIM Card Constructed")
+    }
+    
+    fun setServiceProvider(serviceProvider: ServiceProvider) {
+        this.serviceProvider = serviceProvider
+    }
+
+    fun getConnection(){
+        serviceProvider.getServiceProvider()
+    }
+}
+```
+Method Injection은 `simCard.setServiceProvider(ServiceProvider())` 처럼 외부에서 객체의 의존성을 주입하는 메소드에 인자 값을 넘겨주어 메소드를 실행시켜 의존성을 주입합니다. 
+
+### Field Injection 
+```kotlin 
+class SIMCard(private  val serviceProvider: ServiceProvider) {
+    public lateinit var serviceProvider: ServiceProvider 
+    init {
+        Log.i("MYTAG","SIM Card Constructed")
+    }
+    
+    fun getConnection(){
+        serviceProvider.getServiceProvider()
+    }
+}
+```
+Field Injection은 의존성은 시스템에 의해 초기화 되거나 생성자가 없는 객체, 즉 Construct Injection를 사용할 수 없는 객체에서 사용 가능합니다. `simCard.serviceProvider = ServiceProvider()`처럼 해당 객체가 생성된 후 의존성을 주입하게 됩니다. 
+
+
+
 ## Injection Process 
 <details>
   <summary>SmartPhone Dependeny Injection Progress</summary>
