@@ -115,7 +115,7 @@ SmartPhone 객체 생성 시 필요한 의존성을 주입합니다.
 
 ## Three Way of Dependency Injection
 
-### Construct Injection 
+### Constructor Injection 
 ```kotlin
 val smartPhone = SmartPhone(
     Battery(),
@@ -123,7 +123,7 @@ val smartPhone = SmartPhone(
     MemoryCard()
 ).makeACallWithRecording()
 ```
-Construct Injection은 생성자를 생성 할 때 필요한 객체를 넘겨주어 생성합니다. 
+Constructor Injection은 생성자를 생성 할 때 필요한 객체를 넘겨주어 생성합니다. 
 
 ### Method Injection 
 ```kotlin 
@@ -157,9 +157,38 @@ class SIMCard(private  val serviceProvider: ServiceProvider) {
     }
 }
 ```
-Field Injection은 의존성은 시스템에 의해 초기화 되거나 생성자가 없는 객체, 즉 Construct Injection를 사용할 수 없는 객체에서 사용 가능합니다. `simCard.serviceProvider = ServiceProvider()`처럼 해당 객체가 생성된 후 의존성을 주입하게 됩니다. 
+Field Injection은 의존성이 시스템에 의해 초기화 되거나 생성자가 없는 객체, 즉 Constructor Injection를 사용할 수 없는 객체에서 사용 가능합니다. `simCard.serviceProvider = ServiceProvider()`처럼 해당 객체가 생성된 후 의존성을 주입하게 됩니다. 
 
 
+## DI With Dagger
+수동(Manual)의존성 주입은 코드의 독립성을 높이지만 대규모의 프로젝트에서 작성하기에 많은 시간이 들고 재사용성이 떨어지며 반복적인 패턴으로 비효율적인 생산성을 만들 수 있기 때문에 외부 라이브러리로 자동 생성하는 것이 효율적일 수 있습니다. 
+
+Dagger는 자동으로 코드를 생성해주며 컴파일 시간에 코드가 생성되기때문에 코드를 추적하기 쉽고 다른 솔루션들보다 성능적으로도 뛰어납니다. 
+
+### Constructor Injection With Dagger
+#### @Inject
+우선  객체의 주생성자에 @Inject 어노테이션을 사용해서 Dagger가 Consturctor를 만들 수 있게 허용합니다. 
+```kotlin
+class Battery constructor()
+
+class MemoryCard constructor()
+
+class ServiceProvider constructor()
+
+class SIMCard constructor(private  val serviceProvider: ServiceProvider)
+
+class SmartPhone @Inject constructor(val battery: Battery, val simCard: SIMCard, val memoryCard: MemoryCard)
+```
+
+#### <a href="https://developer.android.com/training/dependency-injection/dagger-basics#dagger-components">@Component</a>
+Dagger는 의존성의 그래프를 그려서 dependency가 어디에 필요한지 찾아냅니다. 그러기 앞서 @Componet 어노테이션의 인터페이스가 필요합니다. 
+@Component 인터페이스 안에는 dependency 클래스의 인스턴스를 반환하는 함수를 정의할 수 있습니다. 
+```kotlin 
+@Component
+interface SmartPhoneComponent {
+    fun getSmartPhone() : SmartPhone
+}
+```
 
 ## Injection Process 
 <details>
