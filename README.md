@@ -33,13 +33,85 @@ fun main() {
 </figure>
 위 사진을 보면 의존성 주입의 여부에 따른 코드 독립성을 보여줍니다. 의존성 주입이 없다면 각각 코드가 의존하는 코드를 직접적으로 필요하게 되므로 독립적으로 존재할 수 없게 되지만, 의존성 주입을 사용함에 따라 코드가 독립성을 가지며 의존하는 객체를 직접적으로 필요하지 않고 그 객체에 대한 구현체만 있다면 되므로 Fake나 Mock을 생성하여 테스트하기 쉬워집니다. 
 
-
-
 ## Scenario
 ![image](https://user-images.githubusercontent.com/55622345/158050431-a32ca0e1-8cb4-44cd-b1ed-8dbe2498b468.png)
-SmartPhoen 객체는 Battery, MemoryCard, SIMCard에 의존,
-SIMCard는 ServiceProvider에 의존.
-SmartPhone 객체 생성 시 필요한 의존성 주입을 Dagger로 주입
+<details>
+  <summary>Full-Code</summary>
+  
+```kotlin
+class Battery {
+    init {
+        Log.i("MYTAG","Battery Constructed")
+    }
+
+    fun getPower(){
+        Log.i("MYTAG","Battery power is available")
+    }
+}
+
+class MemoryCard {
+    init {
+        Log.i("MYTAG","Memory Card Constructed")
+    }
+
+    fun getSpaceAvailablity(){
+        Log.i("MYTAG","Memory space available")
+    }
+}
+
+class ServiceProvider {
+    init {
+        Log.i("MYTAG","Service Provider Constructed")
+    }
+
+    fun getServiceProvider(){
+        Log.i("MYTAG","Service provider connected")
+    }
+}
+
+class SIMCard(private  val serviceProvider: ServiceProvider) {
+    init {
+        Log.i("MYTAG","SIM Card Constructed")
+    }
+
+    fun getConnection(){
+        serviceProvider.getServiceProvider()
+    }
+}
+
+class SmartPhone(val battery: Battery, val simCard: SIMCard, val memoryCard: MemoryCard) {
+
+    init {
+        battery.getPower()
+        simCard.getConnection()
+        memoryCard.getSpaceAvailablity()
+        Log.i("MYTAG", "SmartPhone Constructed")
+    }
+
+    fun makeACallWithRecording() {
+        Log.i("MYTAG", "Calling.....")
+    }
+}
+
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val smartPhone = SmartPhone(
+            Battery(),
+            SIMCard(ServiceProvider()),
+            MemoryCard()
+        )
+            .makeACallWithRecording()
+    }
+}
+```
+</details>
+SmartPhoen 객체는 Battery, MemoryCard, SIMCard에 의존하고
+SIMCard는 ServiceProvider에 의존합니다. 
+SmartPhone 객체 생성 시 필요한 의존성을 주입합니다. 
 
 ## Injection Process 
 <details>
