@@ -209,6 +209,8 @@ public final class DaggerSmartPhoneComponent implements SmartPhoneComponent {
   private final DaggerSmartPhoneComponent smartPhoneComponent = this;
 
   private DaggerSmartPhoneComponent() {
+
+
   }
 
   public static Builder builder() {
@@ -239,7 +241,22 @@ public final class DaggerSmartPhoneComponent implements SmartPhoneComponent {
 }
 ```
 @Component 어노테이션으로 생성한 인터페이스를 구현한 클래스로 자동으로 각각의 @Inject 클래스가 작성된 것을 알 수 있습니다. 
+@Component 어노테이션으로 생성한 인터페이스는 항상 Dagger나는 접두사 를 가지며, Override된 `getSmartPhone()`를 가지고 `MainActivity`에서 사용할 수 있습니다.
 
+#### Using MainActivity
+생성된 `DaggerSmartPhoneComponent`를 가지고 MainActivity에서 아래와 같이 객체를 생성할 수 있습니다. 
+```kotlin
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        DaggerSmartPhoneComponent.create()
+            .getSmartPhone()
+            .makeACallWithRecording()
+    }
+}
+```
 
 
 ## Injection Process 
@@ -338,6 +355,7 @@ public final class DaggerSmartPhoneComponent implements SmartPhoneComponent {
 <br>40. SmartPhone - makeACallWithRecording : Log.i("MYTAG", "Calling.....")
 <br>  함수 로그 출력(onCreate에서 smartPhone 객체가 생성됨을 알림)
 </details>  
+
 ## Ref. 
 https://developer.android.com/training/dependency-injection
 https://developer.android.com/training/dependency-injection/dagger-basics  <br>
