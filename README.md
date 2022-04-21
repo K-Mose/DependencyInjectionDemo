@@ -261,9 +261,15 @@ class MainActivity : AppCompatActivity() {
 @Inject 어노테이션은 사용할 모든 의존성 객체의 생성자에 표시하고, @Component 어노테이션을 Component Interface에 사용하면 Dagger가 모든 dependency을 생성할 수 있게 합니다. 
 
 ## Module 
-많은 상황에서 우리는 외부 라이브러리 사용 등으로 실제 클래스를 열어서 생성자에 @Inject 어노테이션을 붙일 수 없는 상황이 오게 됩니다. 실제로 소유하고 있지 않은 클래스에 대해서는 어떻게 의존성을 주입할 수 있을까요?  
+많은 상황에서 우리는 외부 라이브러리 사용 등으로 실제 클래스를 열어서 생성자에 @Inject 어노테이션을 붙일 수 없는 상황이 오게 됩니다. 
+Dagger.dev에서는 아래와 같은 상황에서는 @Inject 어노테이션을 사용할 수 없다고 합니다.
+- Interfaces can’t be constructed.
+- Third-party classes can’t be annotated.
+- Configurable objects must be configured!
 
-Dagger의 Moduler과 Provider 함수로 이러한 의존성을 제공할 수 있습니다. 
+### Provides
+실제로 소유하고 있지 않은 클래스에 대해서는 어떻게 의존성을 주입할 수 있을까요?  
+Dagger의 Module과 Provides 함수로 이러한 의존성을 제공할 수 있습니다. 
 
 `MemoryCard`클래스가 외부 라이브러리에서 불러와 소유하고 있지 않다고 가정해 봅시다. 그래서 생성자에 @Inject 어노테이션을 붙일 수 없는 상황이 됩니다. Dagger로 제공하기 위해서 새로운 `MemoryCardModule`클래스를 만듭니다. 그래고 제공할 의존성을 반환하는 provider함수를 작성합니다. 
 ```kotlin 
@@ -288,7 +294,111 @@ interface SmartPhoneComponent {
 }
 ```
 
+<details>
+  <summary>DaggerSmartPhoneComponent - auto generated</summary>
+
+```kotlin
+@DaggerGenerated
+@SuppressWarnings({
+    "unchecked",
+    "rawtypes"
+})
+public final class DaggerSmartPhoneComponent implements SmartPhoneComponent {
+  private final MemoryCardModule memoryCardModule;
+
+  private final DaggerSmartPhoneComponent smartPhoneComponent = this;
+
+  private DaggerSmartPhoneComponent(MemoryCardModule memoryCardModuleParam) {
+    this.memoryCardModule = memoryCardModuleParam;
+
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static SmartPhoneComponent create() {
+    return new Builder().build();
+  }
+
+  private SIMCard sIMCard() {
+    return new SIMCard(new ServiceProvider());
+  }
+
+  @Override
+  public SmartPhone getSmartPhone() {
+    return new SmartPhone(new Battery(), sIMCard(), MemoryCardModule_ProvidesMemoryCardFactory.providesMemoryCard(memoryCardModule));
+  }
+
+  public static final class Builder {
+    private MemoryCardModule memoryCardModule;
+
+    private Builder() {
+    }
+
+    public Builder memoryCardModule(MemoryCardModule memoryCardModule) {
+      this.memoryCardModule = Preconditions.checkNotNull(memoryCardModule);
+      return this;
+    }
+
+    public SmartPhoneComponent build() {
+      if (memoryCardModule == null) {
+        this.memoryCardModule = new MemoryCardModule();
+      }
+      return new DaggerSmartPhoneComponent(memoryCardModule);
+    }
+  }
+}
+```
+위의 자동 생성된 클래스를 보면 MemoryCard 클래스가 Module로 생성되는 것을 볼 수 있습니다. 
+</details>
+
+
 모듈은 꼭 필요할 때만 추가하는 것이 좋습니다. 모든 클래스의 생성자에 @Inject 어노테이션을 추가할 수 있다면 @Module을 생성할 필요가 없습니다. 
+
+
+## Working With Interface 
+인터페이스가 클래스 대신 의존성으로 필요할 때가 있습니다. 
+우선 예를 들기 위해 `Battery`클래스를 인터페이스로 변경하겠습니다. 
+```kotlin
+interface Battery {
+    fun getPower()
+}
+```
+인터페이스로 수정하면 `class SmartPhone @Inject constructor(val battery: Battery, val simCard: SIMCard, val memoryCard: MemoryCard)` 여기 필요한 battery 파라메터는 인터페이스로 바뀌기 때문에 `Battery`를 생성할 수 없어 오류가 생기게 됩니다. 
+
+여기서는 `Battery`인터페이스를 구현하는 클래스가 필요하고, 그 클래스를 module로써 의존성을 제공해야 합니다. 우선 `Battery` 인터페이스를 구현하는 클래스를 작성합니다. 
+```kotlin 
+class NickelCadmiumBattery @Inject constructor() : Battery {
+    override fun getPower() {
+        Log.i("MYTAG", "Power from NickelCadmiumBattery")
+    }
+}
+```
+이 상태로 실행을 하면 클래스를 생성해 @Inject 어노테이션을 붙였음에도 에러가 발생합니다. 개발자가 봤을 때는 이 클래스가 `Battery`인터페이스를 구현하는 클래스 인것을 알 수 있지만 Dagger는 그렇지 못합니다. Dagger가 알기 위해서는 module을 생성하고 이 클래스를 의존성으로 제공해주어야 합니다. 
+
+### Bind
+우선 구현 클래스를 제공할 모듈을 생성합니다. 모듈을 abstract로 작성한다면 더욱 간단히 작성할 수 있습니다.
+```kotlin
+@Module
+abstract class NCBatteryModule {
+    @Binds
+    abstract fun providesNCBattery(nickelCadmiumBattery: NickelCadmiumBattery): Battery
+}
+```
+`NickelCadmiumBattery`클래스에서 이미 @Inject 어노테이션으로 생성자가 있으므로 모듈 클래스에는 body를 선언할 필요가 없으므로 abstract class로 생성합니다. 
+`NickelCadmiumBattery`의 @Inject 어노테이션으로 Dagger에서 생성자가 생성되므로 `providesNCBattery(nickelCadmiumBattery: NickelCadmiumBattery)` 함수에서 생성자를 받고 리턴합니다. 
+
+마지막으로 생성한 모듈을 Component에 추가시킵니다. <br>
+``
+@Component(modules = [MemoryCardModule::class, NCBatteryModule::class])
+``
+
+https://dagger.dev/dev-guide/ 에는 아래와 같이 @Bind를 사용하는 것이 선호됩니다. 
+<p>
+Note: Using @Binds is the preferred way to define an alias because Dagger only needs the module at compile time, and can avoid class loading the module at runtime.
+</p>
+
 
 ## Injection Process 
 <details>
@@ -392,3 +502,4 @@ https://developer.android.com/training/dependency-injection
 https://developer.android.com/training/dependency-injection/dagger-basics  <br>
 https://www.youtube.com/watch?v=oK_XtfXPkqw  <br>
 https://docs.google.com/presentation/d/1fby5VeGU9CN8zjw4lAb2QPPsKRxx6mSwCe9q7ECNSJQ/pub?start=false&loop=false&delayms=3000&slide=id.g36bd8951a_05  <br>
+https://dagger.dev/dev-guide/ <br>
