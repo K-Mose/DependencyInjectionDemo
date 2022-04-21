@@ -400,6 +400,40 @@ Note: Using @Binds is the preferred way to define an alias because Dagger only n
 </p>
 
 
+## Field Injection 
+`MainActivity`에서 `SmartPhoneComponent`인터페이스의 `getSmartPhone()` 함수를 호출함으로 의존성을 호출하였습니다. 이러한 방법은 여러 activity와 fragment가 존재하는 프로젝트 내에서는 좋은 방법이 아닙니다. 
+만약 SmartPhone과 같은 여러개의 dependency가 필요하다면 각각의 Component를 만들고 getter 메소드를 작성하여 Activity마다 호출하게 될 것입니다. 
+
+이러한 것들을 Field Injection으로 쉽게 변경할 수 있습니다. 
+
+우선 기존 getter 함수를 Inject 함수로 변경합니다. 
+```kotlin 
+interface SmartPhoneComponent {
+    fun inject(mainActivity: MainActivity)
+}
+```
+함수의 파라메터에 사용할 Activity(or Fragment)를 넣어줌으로 해당 Activity(or Fragment)에서 사용할 것을 알려줍니다. 
+
+위의 함수를 `MainActivity`에서 사용하기 위해 아래와 같이 변경합니다. 
+```kotlin 
+class MainActivity : AppCompatActivity() {
+    @Inject
+    lateinit var smartPhone: SmartPhone
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        DaggerSmartPhoneComponent.create()
+            .inject(this)
+        smartPhone.makeACallWithRecording()
+    }
+}
+```
+이제 `DaggerSmartPhoneComponent`클래스가 생성되면서 전역변수로 사용된 `samartPhone` 필드에 Field injection이 주입됩니다. 
+
+*What is different?* - 기존의 `getSmartPhone()` 함수로 DI를 실행하게된다면 SmartPhone dependency만 사용 가능합니다. 다른 dependency를 사용하고 싶다면 다른 Component interface를 생성하여 실행시켜야 할 것입니다. <br>
+Field injection을 사용함으로 하나의 Component로 의존성을 주입할 수 있게 됩니다. 
+
 ## Injection Process 
 <details>
   <summary>SmartPhone Dependeny Injection Progress</summary>
