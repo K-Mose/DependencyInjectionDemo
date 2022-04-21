@@ -258,6 +258,37 @@ class MainActivity : AppCompatActivity() {
 }
 ```
 
+@Inject 어노테이션은 사용할 모든 의존성 객체의 생성자에 표시하고, @Component 어노테이션을 Component Interface에 사용하면 Dagger가 모든 dependency을 생성할 수 있게 합니다. 
+
+## Module 
+많은 상황에서 우리는 외부 라이브러리 사용 등으로 실제 클래스를 열어서 생성자에 @Inject 어노테이션을 붙일 수 없는 상황이 오게 됩니다. 실제로 소유하고 있지 않은 클래스에 대해서는 어떻게 의존성을 주입할 수 있을까요?  
+
+Dagger의 Moduler과 Provider 함수로 이러한 의존성을 제공할 수 있습니다. 
+
+`MemoryCard`클래스가 외부 라이브러리에서 불러와 소유하고 있지 않다고 가정해 봅시다. 그래서 생성자에 @Inject 어노테이션을 붙일 수 없는 상황이 됩니다. Dagger로 제공하기 위해서 새로운 `MemoryCardModule`클래스를 만듭니다. 그래고 제공할 의존성을 반환하는 provider함수를 작성합니다. 
+```kotlin 
+import dagger.Module
+import dagger.Provides
+
+@Module
+class MemoryCardModule {
+    @Provides
+    fun providesMemoryCard(): MemoryCard {
+        return MemoryCard()
+    }
+}
+```
+provider 함수에 @Provides 어노테이션을 추가해 Dagger가 알 수 있게 합니다. 
+
+그리고 Component 인터페이스의 @Compoenet 어노테이션에 Module을 추가합니다. 
+```kotlin 
+@Component(modules = [MemoryCardModule::class])
+interface SmartPhoneComponent {
+    fun getSmartPhone(): SmartPhone
+}
+```
+
+모듈은 꼭 필요할 때만 추가하는 것이 좋습니다. 모든 클래스의 생성자에 @Inject 어노테이션을 추가할 수 있다면 @Module을 생성할 필요가 없습니다. 
 
 ## Injection Process 
 <details>
