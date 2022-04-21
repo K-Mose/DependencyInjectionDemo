@@ -434,6 +434,57 @@ class MainActivity : AppCompatActivity() {
 *What is different?* - 기존의 `getSmartPhone()` 함수로 DI를 실행하게된다면 SmartPhone dependency만 사용 가능합니다. 다른 dependency를 사용하고 싶다면 다른 Component interface를 생성하여 실행시켜야 할 것입니다. <br>
 Field injection을 사용함으로 하나의 Component로 의존성을 주입할 수 있게 됩니다. 
 
+## State Of A Module
+보통은 모듈애 상태 값을 넣는 것은 사용되지 않습니다. 하지만 시나리오에 따라 모듈안에 변수가 필요할 수 있습니다.<br>
+아래와 같이 `MemoryCardModule`클래스에 초기화를 위한 메모리 크기 값을 전달한다고 가정해 봅시다.
+```kotlin
+@Module
+class MemoryCardModule(val memorySize:Int) {
+    @Provides
+    fun providesMemoryCard(): MemoryCard {
+        Log.i("MYTAG", "Size of the memory is $memorySize")
+        return MemoryCard()
+    }
+}
+```
+프로젝트를 rebuild 하게 되면 `MainActivty`에서 더이상 `DaggerSmartPhoneComponent.create()`를 사용할 수 없게 됩니다. 
+<img src="https://user-images.githubusercontent.com/55622345/164466708-5ea85c15-1bc1-4fef-8854-c22e6b1f3762.png" max-width="800px"/>
+
+<details>
+<summary>rebuild</summary>
+
+`DaggerSmartPhoneComponent`클래스를 보면 기존의 `create()` 메소드는 사라지고 `build()`메소드가 변경된 것을 볼 수 있습니다. 
+```kotlin
+public static SmartPhoneComponent create() {
+  return new Builder().build();
+}
+…
+public SmartPhoneComponent build() {
+  if (memoryCardModule == null) {
+    this.memoryCardModule = new MemoryCardModule();
+  }
+  return new DaggerSmartPhoneComponent(memoryCardModule);
+}
+```
+↓
+```kotlin
+public SmartPhoneComponent build() {
+  Preconditions.checkBuilderRequirement(memoryCardModule, MemoryCardModule.class);
+  return new DaggerSmartPhoneComponent(memoryCardModule);
+}
+```
+</details>
+
+이제  `MainActivity`에서 `SmartPhoneComponent`를 `builder()`로 생성하여 모듈에 값을 넘겨주어 초기화 의존성을 주입하면 됩니다. 
+```kotlin
+DaggerSmartPhoneComponent.builder()
+    .memoryCardModule(MemoryCardModule(1024))
+    .build()
+    .inject(this)
+smartPhone.makeACallWithRecording()
+```
+
+
 ## Injection Process 
 <details>
   <summary>SmartPhone Dependeny Injection Progress</summary>
