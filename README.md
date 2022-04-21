@@ -435,7 +435,7 @@ class MainActivity : AppCompatActivity() {
 Field injection을 사용함으로 하나의 Component로 의존성을 주입할 수 있게 됩니다. 
 
 ## State Of A Module
-보통은 모듈애 상태 값을 넣는 것은 사용되지 않습니다. 하지만 시나리오에 따라 모듈안에 변수가 필요할 수 있습니다.<br>
+보통은 모듈애 상태 값을 넣는 것은 사용되지 않습니다. 하지만 시나리오에 따라 모듈에 값을 전달할 필요가 있습니다.<br>
 아래와 같이 `MemoryCardModule`클래스에 초기화를 위한 메모리 크기 값을 전달한다고 가정해 봅시다.
 ```kotlin
 @Module
@@ -484,6 +484,52 @@ DaggerSmartPhoneComponent.builder()
 smartPhone.makeACallWithRecording()
 ```
 
+## Application Class
+Application Class는 안드로이드에서 가장 기본이 되는 클래스입니다. 이 클래스는 바꿀 수 없지만 확장하여서 추가적인 코드를 작성할 수 있습니다.  
+Application Class의 Subclass는 모든 Activity, Fragment나 Applicaton Object가 초기화되기 전에 가장 먼저 초기화됩니다. 
+
+*Subclass of Application Class*는 액티비티가 생성되기 전에 실행시키기 위한 작업들이 필요하다거나 모든 컴포넌트에 공유할 수 있는 불변 변수나 전역 객체를 미리 정의하기 위해서 사용합니다. 
+
+SmartPhone 예제에서 Activity가 5개가 있다면 `MainActiviy`에서 생성한 `DaggerSmartPhoneComponent.….inject(this)`를 각각 Activity마다 생성해야 합니다. 이러한 객체를 Application Class의 SubClass에 생성한다면 이러한 boilerplate코드를 방지할 수 있습니다. 
+
+### Create of SubClass
+우선 `Application`클래스를 상속할 클래스를 생성합니다.  <br>
+`class SmartPhoneApplication : Application() {}` <br>
+
+그리고 `onCreate()`함수를 Override 후 `SmartPhoneComponent`타입의 전역변수를 생성합니다.
+```kotlin
+    lateinit var smartPhoneComponent: SmartPhoneComponent
+    override fun onCreate() {
+        super.onCreate()
+    }
+```
+
+그리고 Dagger Component를 생성할 함수를 생성 후 smartPhoneComponent에 전달합니다. 
+```kotlin 
+    override fun onCreate() {
+        super.onCreate()
+        smartPhoneComponent = initDagger()
+    }
+    
+    private fun initDagger(): SmartPhoneComponent {
+        return DaggerSmartPhoneComponent.builder()
+            .memoryCardModule(MemoryCardModule(1024))
+            .build()
+    }
+```
+
+이제 `MainActivity`로 돌아와 `Application` 클래스에서 smartPhoneComponent를 가져옵니다. 
+```kotlin
+        (application as SmartPhoneApplication).smartPhoneComponent
+            .inject(this)
+```
+
+마지막으로 `Application`클래스를 생성한 `SmartPhoneApplication`클래스로 변환하기 위해 `Mainfest`에서 application의 <a href="https://developer.android.com/guide/topics/manifest/application-element?hl=ko#nm">name</a>을 지정합니다. 
+```kotlin
+<application
+        android:name=".SmartPhoneApplication"
+         …
+```
 
 ## Injection Process 
 <details>
