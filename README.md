@@ -531,6 +531,34 @@ SmartPhone 예제에서 Activity가 5개가 있다면 `MainActiviy`에서 생성
          …
 ```
 
+
+## Inject Singleton 
+매번 DaggerComponent를 주입할 때 마다 Activity 내에서 매번 `smartPhoneComponent.inject(this)`함수를 실행시킵니다. 이것은 화면이 회전되거나 액티비티가 변경 될 때마다 계속 생겨나므로 메모리가 낭비됩니다. 
+이러한 낭비를 @Singleton 어노테이션을 사용하여 쉽게 방지할 수 있습니다. 
+
+`SmartPhone` 클래스와 `SmartPhoneComponent` 인터페이스에 @Singleton 어노테이션을 붙여 해당 객체들을 Singleton 패턴으로 변경합니다. 
+```kotlin 
+@Singleton
+class SmartPhone @Inject constructor(…)
+```
+
+```kotlin 
+@Singleton
+@Component(modules = [MemoryCardModule::class, NCBatteryModule::class])
+interface SmartPhoneComponent { … }
+```
+#### Screen Roatating 
+***Without Singleton*** <br>
+![image](https://user-images.githubusercontent.com/55622345/164606377-1d3f64c7-8bbe-47a8-923c-87f213dc0262.png)
+
+***With Singleton*** <br>
+![image](https://user-images.githubusercontent.com/55622345/164606394-4b4fe4e4-e854-4414-aa7b-1d3acaacc289.png)
+
+Singleton으로 회전한 화면은 객체를 재사용하기 때문에 다시 의존성 주입을 하지 않고 `smartPhone.makeACallWithRecording()`함수가 호출되는 것을 볼 수 있습니다.
+
+
+
+
 ## Injection Process 
 <details>
   <summary>SmartPhone Dependeny Injection Progress</summary>
